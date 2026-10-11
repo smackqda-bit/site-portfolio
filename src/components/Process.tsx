@@ -1,0 +1,8 @@
+"use client";
+import { useState } from "react";
+import { processSteps } from "@/content/expertise";
+import { Reveal } from "./Reveal";
+export function Process(){
+ const [active,setActive]=useState(0);
+ return <section className="section process-section" id="approach"><div className="section-heading mono"><span>04 / Our operating system</span><span>AI-powered. Human-directed.</span></div><Reveal><h2 className="display-title">HUMAN VISION.<br/><span className="outlined">ARTIFICIAL INTELLIGENCE.</span><br/><em>UNLIMITED POSSIBILITIES.</em></h2></Reveal><div className="process-intro"><span className="process-symbol" aria-hidden="true">✳</span><p>Technology expands the possibilities.<br/>People give them purpose.</p></div><div className="process-track" role="tablist" aria-label="Our development process">{processSteps.map((s,i)=><button key={s.title} id={`step-tab-${i}`} role="tab" aria-selected={active===i} aria-controls="step-panel" tabIndex={active===i?0:-1} onClick={()=>setActive(i)} onKeyDown={e=>{let next=active;if(e.key==="ArrowRight"||e.key==="ArrowDown")next=(active+1)%processSteps.length;else if(e.key==="ArrowLeft"||e.key==="ArrowUp")next=(active+processSteps.length-1)%processSteps.length;else if(e.key==="Home")next=0;else if(e.key==="End")next=processSteps.length-1;else return;e.preventDefault();setActive(next);document.getElementById(`step-tab-${next}`)?.focus();}}><span className="process-node" aria-hidden="true">{i===2?"✳":String(i+1).padStart(2,"0")}</span><span>{s.title}</span></button>)}</div><div className="process-panel" id="step-panel" role="tabpanel" aria-labelledby={`step-tab-${active}`} tabIndex={0}><span className="mono">{processSteps[active].label}</span><p key={active}>{processSteps[active].description}</p></div></section>;
+}
