@@ -1,15 +1,26 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Arrow, Wordmark } from "./Logo";
 import { useMotion } from "./MotionProvider";
 import { motion } from "@/lib/motion";
 
 const ChromeScene = dynamic(() => import("./ChromeScene"), { ssr: false });
 
+// Keep this threshold aligned with the typography layout in experience.css.
+const sculptureQuery = "(min-width: 1800px)";
+const subscribeToScreen = (notify: () => void) => {
+  const media = window.matchMedia(sculptureQuery);
+  media.addEventListener("change", notify);
+  return () => media.removeEventListener("change", notify);
+};
+const isLargeScreen = () => window.matchMedia(sculptureQuery).matches;
+const serverScreen = () => false;
+
 export function Hero() {
   const root = useRef<HTMLElement>(null);
+  const largeScreen = useSyncExternalStore(subscribeToScreen, isLargeScreen, serverScreen);
   const played = useRef(false);
   const mountedAt = useRef(0);
   const [scene, setScene] = useState<"loading" | "ready" | "fallback">("loading");
@@ -19,13 +30,17 @@ export function Hero() {
 
   useEffect(() => {
     mountedAt.current = performance.now();
-    // A failed chunk or unavailable GPU must never hold the introduction hostage.
-    const timer = setTimeout(() => setScene((current) => current === "loading" ? "fallback" : current), 3500);
-    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    if (reduced || scene === "loading" || played.current || !root.current) return;
+    if (!largeScreen) return;
+    // Stop the loading hint if the scene cannot initialize.
+    const timer = setTimeout(() => setScene((current) => current === "loading" ? "fallback" : current), 3500);
+    return () => clearTimeout(timer);
+  }, [largeScreen]);
+
+  useEffect(() => {
+    if (reduced || played.current || !root.current) return;
     played.current = true;
     let disposed = false;
     let revert = () => {};
@@ -51,16 +66,16 @@ export function Hero() {
       revert = () => ctx.revert();
     }).catch(() => {});
     return () => { disposed = true; revert(); };
-  }, [reduced, scene]);
+  }, [reduced]);
 
   return (
-    <section ref={root} className="hero" id="top" aria-labelledby="hero-title" data-scene={scene}>
+    <section ref={root} className="hero" id="top" aria-labelledby="hero-title" data-scene={largeScreen ? scene : "disabled"}>
       <div className="hero-topline mono">
         <span><i className="status-dot" /> Independent minds. Open possibilities.</span>
         <span>SMACKQ / Digital atelier / 2026</span>
       </div>
       <div className="hero-wordmark"><Wordmark /></div>
-      <div className="hero-art"><ChromeScene onReady={sceneReady} impulse={impulse} /></div>
+      <div className="hero-art">{largeScreen && <ChromeScene onReady={sceneReady} impulse={impulse} />}</div>
       <div className="hero-instrument">
         <span className="instrument-cross" aria-hidden="true">+</span>
         <span className="mono">SQ—001 / Living matter</span>

@@ -40,10 +40,10 @@ export default function ChromeScene({ onReady, impulse }: Props) {
       try {
         const compact = matchMedia("(max-width: 767px)").matches || navigator.hardwareConcurrency <= 4;
         const renderer = new T.WebGLRenderer({
-          antialias: !compact, alpha: true, stencil: false, powerPreference: "low-power",
+          antialias: true, alpha: true, stencil: false, powerPreference: "low-power",
         });
         releases.push(() => { renderer.dispose(); renderer.domElement.remove(); });
-        renderer.setPixelRatio(Math.min(devicePixelRatio, compact ? 1.25 : 1.6));
+        renderer.setPixelRatio(Math.min(devicePixelRatio, compact ? 2 : 1.6));
         renderer.toneMapping = T.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.05;
         mount.appendChild(renderer.domElement);
@@ -91,8 +91,8 @@ export default function ChromeScene({ onReady, impulse }: Props) {
           }
         }
         const curve = new MatterCurve();
-        const segments = compact ? 112 : 176;
-        const radial = compact ? 20 : 32;
+        const segments = compact ? 144 : 176;
+        const radial = 32;
         const geometry = new T.TubeGeometry(curve, segments, 0.34, radial, true);
         releases.push(() => geometry.dispose());
         const vertices = geometry.getAttribute("position");
@@ -176,8 +176,10 @@ export default function ChromeScene({ onReady, impulse }: Props) {
             distortion.value = 0.025 + Math.abs(pointerX) * 0.035 + pulse * 0.17;
             camera.position.z = 7.1 + scroll * 0.8;
             averageDelta = damp(averageDelta, dt, 1, dt);
-            if (++samples === 150 && averageDelta > 0.026 && renderer.getPixelRatio() > 1) {
-              renderer.setPixelRatio(1);
+            // Preserve smooth silhouettes on dense mobile screens when reducing render cost.
+            const minimumPixelRatio = Math.min(devicePixelRatio, compact ? 1.5 : 1);
+            if (++samples === 150 && averageDelta > 0.026 && renderer.getPixelRatio() > minimumPixelRatio) {
+              renderer.setPixelRatio(minimumPixelRatio);
               renderer.setSize(mount.clientWidth, mount.clientHeight);
             }
           }
@@ -297,8 +299,6 @@ export default function ChromeScene({ onReady, impulse }: Props) {
   }, [onReady]);
 
   return (
-    <div className={`chrome-scene ${ready ? "is-ready" : ""}`} ref={host} aria-hidden="true">
-      <div className="chrome-fallback"><i /><i /><i /></div>
-    </div>
+    <div className={`chrome-scene ${ready ? "is-ready" : ""}`} ref={host} aria-hidden="true" />
   );
 }
