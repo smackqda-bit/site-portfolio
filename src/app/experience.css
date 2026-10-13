@@ -4,12 +4,22 @@
   --body: var(--font-geist), Arial, sans-serif;
   --muted: #a1a897;
   --tracking-display: -.065em;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --pad: max(clamp(24px, 4vw, 80px), env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
 }
-body { font-synthesis: none; }
+html { scroll-padding-top: calc(100px + var(--safe-top)); }
+body { font-synthesis: none; padding-top: var(--safe-top); padding-bottom: var(--safe-bottom); }
 h1, h2, h3 { text-wrap: balance; }
 .logo { width: 132px; line-height: 0; letter-spacing: 0; flex-shrink: 0; }
 .logo svg { display: block; width: 100%; height: auto; }
-.site-header { height: 90px; }
+/* Paint the full screen edge; keep controls below the iPhone status area. */
+.site-header {
+  --header-height: 90px;
+  height: calc(var(--header-height) + var(--safe-top));
+  padding-top: var(--safe-top);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
 .header-note { font-size: 10px; }
 .desktop-nav a { min-height: 44px; display: flex; align-items: center; }
 .menu-trigger { width: 44px; height: 44px; }
@@ -136,10 +146,11 @@ h1, h2, h3 { text-wrap: balance; }
 .menu-layout > .eyebrow { color: #354021; font-size: 13px; line-height: 1.6; }
 .menu-bottom { font-size: 11px; }
 .menu-home { min-height: 44px; display: flex; align-items: center; font-size: 12px; }
+.menu-dialog { padding-top: calc(30px + var(--safe-top)); padding-bottom: calc(30px + var(--safe-bottom)); }
 .menu-dialog[open] { animation-duration: var(--base); }
-/* Keep keyboard focus visible within the close button’s existing circle. */
-.menu-dialog .round-button:focus { outline: 0; }
-.menu-dialog .round-button:focus-visible { border-width: 3px; }
+/* Keep a single thin circle, including after the dialog moves focus here. */
+.menu-dialog .round-button:focus { outline: 0; border-width: 1px; }
+.menu-dialog[data-keyboard] .round-button:focus-visible { background: #080808; color: var(--acid); border-color: #080808; }
 .custom-cursor { left: -14px; top: -14px; width: 28px; height: 28px; border-color: #c6ff3d65; mix-blend-mode: normal; }
 .custom-cursor.cursor-active { width: 48px; height: 48px; margin: -10px; background: transparent; }
 .page-transition { animation: none; }
@@ -184,12 +195,8 @@ h1, h2, h3 { text-wrap: balance; }
   .hero-footer { grid-row: 3; }
 }
 @media (max-width: 700px) {
-  :root { --pad: 24px; }
-  /* An opaque edge lets mobile WebKit extend the header color beneath its collapsing toolbar. */
-  .site-header {
-    height: 74px; gap: 20px; background: var(--bg);
-    -webkit-backdrop-filter: none; backdrop-filter: none;
-  }
+  :root { --pad: max(24px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
+  .site-header { --header-height: 74px; gap: 20px; }
   .site-header .logo { width: 115px; }
   .desktop-nav { display: none; }
   .menu-trigger { margin-left: auto; }
@@ -306,7 +313,7 @@ h1, h2, h3 { text-wrap: balance; }
   .error-page h1 { font-size: 13vw; }
 }
 @media (max-width: 360px) {
-  :root { --pad: 20px; }
+  :root { --pad: max(20px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
   .section-heading > span:last-child { max-width: 113px; }
 }
 @media (max-height: 600px) and (min-width: 701px) {

@@ -10,6 +10,7 @@ import { motion } from "@/lib/motion";
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const [keyboardMenu, setKeyboardMenu] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
@@ -27,8 +28,9 @@ export function Header() {
     };
   }, []);
 
-  function show() {
+  function show(event: React.MouseEvent<HTMLButtonElement>) {
     if (!dialog.current || dialog.current.open) return;
+    setKeyboardMenu(event.detail === 0);
     previousOverflow.current = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     dialog.current.showModal();
@@ -83,6 +85,9 @@ export function Header() {
         aria-expanded={open} aria-controls="site-menu" aria-label="Open navigation menu"><span /><span /></button>
     </header>
     <dialog ref={dialog} id="site-menu" className="menu-dialog" aria-label="Site navigation"
+      data-keyboard={keyboardMenu ? "" : undefined}
+      onKeyDown={(event) => { if (event.key === "Tab") setKeyboardMenu(true); }}
+      onPointerDown={() => setKeyboardMenu(false)}
       onCancel={(event) => { event.preventDefault(); void close(); }}>
       <div className="menu-top">
         <Link href="/" className="menu-home mono" onClick={(event) => navigate(event, "/")}>SMACKQ / Home ↗</Link>
