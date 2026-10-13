@@ -157,7 +157,6 @@ h1, h2, h3 { text-wrap: balance; }
 .error-page h1 { font-weight: 400; letter-spacing: -.07em; font-size: clamp(68px, 9.5vw, 150px); }
 @media (min-width: 1800px) {
   .hero { padding-left: max(80px, calc((100vw - 1760px)/2)); padding-right: max(80px, calc((100vw - 1760px)/2)); }
-  .hero-wordmark svg { max-height: 360px; }
 }
 @media (max-width: 1100px) {
   .header-note { display: none; }
@@ -171,29 +170,27 @@ h1, h2, h3 { text-wrap: balance; }
   .service-name { font-size: 3.5vw; }
   .service-art { right: 9%; }
 }
-/* Small desktops, tablets and phones use a typography-led opening. */
-@media (width < 1800px) {
-  .hero {
-    min-height: clamp(680px, 100svh, 1100px);
-    grid-template-rows: auto 1fr auto;
-  }
-  .hero::before { inset: 15% 0 10%; background: radial-gradient(ellipse at 75% 50%, #c6ff3d06, transparent 65%); }
-  .hero-wordmark, .hero-art, .hero-instrument, .hero-kicker { display: none; }
-  .hero-bottom {
-    grid-row: 2; align-self: center; flex-direction: column; align-items: stretch;
-    gap: clamp(32px, 5svh, 56px); padding: 48px 0;
-  }
-  .hero h1 { font-size: clamp(84px, 14vw, 240px); line-height: .96; }
-  .hero-intro {
-    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center;
-    gap: 32px; border-top: 1px solid var(--line); padding: 24px 0 0;
-  }
-  .hero-intro p { max-width: 34ch; font-size: 16px; line-height: 1.65; margin: 0; }
-  .hero-intro p br { display: none; }
-  .hero-intro .pill-button { min-width: 220px; justify-content: space-between; }
-  .hero-intro .text-link { display: none; }
-  .hero-footer { grid-row: 3; }
+/* The same typography-led opening on every screen. */
+.hero {
+  min-height: clamp(680px, 100svh, 1100px);
+  grid-template-rows: auto 1fr auto;
 }
+.hero::before { inset: 15% 0 10%; background: radial-gradient(ellipse at 75% 50%, #c6ff3d06, transparent 65%); }
+.hero-wordmark, .hero-art, .hero-instrument, .hero-kicker { display: none; }
+.hero-bottom {
+  grid-row: 2; align-self: center; flex-direction: column; align-items: stretch;
+  gap: clamp(32px, 5svh, 56px); padding: 48px 0;
+}
+.hero h1 { font-size: clamp(84px, 14vw, 240px); line-height: .96; }
+.hero-intro {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center;
+  gap: 32px; border-top: 1px solid var(--line); padding: 24px 0 0;
+}
+.hero-intro p { max-width: 34ch; font-size: 16px; line-height: 1.65; margin: 0; }
+.hero-intro p br { display: none; }
+.hero-intro .pill-button { min-width: 220px; justify-content: space-between; }
+.hero-intro .text-link { display: none; }
+.hero-footer { grid-row: 3; }
 @media (max-width: 700px) {
   :root { --pad: max(24px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
   .site-header { --header-height: 74px; gap: 20px; }
@@ -317,10 +314,33 @@ h1, h2, h3 { text-wrap: balance; }
   .section-heading > span:last-child { max-width: 113px; }
 }
 @media (max-height: 600px) and (min-width: 701px) {
-  .hero { min-height: 640px; }
   .menu-layout { padding-top: 30px; }
   .menu-layout nav a { font-size: 10vh; }
   .menu-bottom { margin-top: 30px; }
+}
+/* Fit the complete opening into the viewport above the mobile breakpoint. */
+@media (min-width: 701px) {
+  .hero {
+    --hero-viewport: calc(100svh - var(--safe-top));
+    --hero-top: clamp(96px, 14svh, 126px);
+    --hero-footer: clamp(44px, 7.56svh, 68px);
+    height: var(--hero-viewport); min-height: 0;
+    padding-top: var(--hero-top);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .hero-intro .pill-button { min-height: 44px; padding-top: min(2svh, 18px); padding-bottom: min(2svh, 18px); }
+  .hero-footer { min-height: var(--hero-footer); }
+  .hero {
+    --hero-main-pad: clamp(8px, 3svh, 32px);
+    --hero-main-gap: clamp(12px, 4svh, 40px);
+    --hero-intro-pad: clamp(12px, 2.67svh, 24px);
+    --hero-title-limit: calc((var(--hero-viewport) - var(--hero-top) - var(--hero-footer) - 16px - var(--hero-main-pad) * 2 - var(--hero-main-gap) - var(--hero-intro-pad) - 56px) / 2.05);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .hero-bottom { gap: var(--hero-main-gap); padding: var(--hero-main-pad) 0; }
+  .hero h1 { font-size: min(14vw, 240px, var(--hero-title-limit)); }
+  .hero-intro { padding: var(--hero-intro-pad) 0 0; }
+  .hero-intro p { font-size: clamp(12px, 1.78svh, 16px); margin: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero *, .section::before { animation: none !important; transition: none !important; }

@@ -1,43 +1,19 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { Arrow, Wordmark } from "./Logo";
+import { useEffect, useRef } from "react";
+import { Arrow } from "./Logo";
 import { useMotion } from "./MotionProvider";
 import { motion } from "@/lib/motion";
 
-const ChromeScene = dynamic(() => import("./ChromeScene"), { ssr: false });
-
-// Keep this threshold aligned with the typography layout in experience.css.
-const sculptureQuery = "(min-width: 1800px)";
-const subscribeToScreen = (notify: () => void) => {
-  const media = window.matchMedia(sculptureQuery);
-  media.addEventListener("change", notify);
-  return () => media.removeEventListener("change", notify);
-};
-const isLargeScreen = () => window.matchMedia(sculptureQuery).matches;
-const serverScreen = () => false;
-
 export function Hero() {
   const root = useRef<HTMLElement>(null);
-  const largeScreen = useSyncExternalStore(subscribeToScreen, isLargeScreen, serverScreen);
   const played = useRef(false);
   const mountedAt = useRef(0);
-  const [scene, setScene] = useState<"loading" | "ready" | "fallback">("loading");
-  const [impulse, setImpulse] = useState(0);
   const { reduced, paused, systemReduced, toggle } = useMotion();
-  const sceneReady = useCallback((available: boolean) => setScene(available ? "ready" : "fallback"), []);
 
   useEffect(() => {
     mountedAt.current = performance.now();
   }, []);
-
-  useEffect(() => {
-    if (!largeScreen) return;
-    // Stop the loading hint if the scene cannot initialize.
-    const timer = setTimeout(() => setScene((current) => current === "loading" ? "fallback" : current), 3500);
-    return () => clearTimeout(timer);
-  }, [largeScreen]);
 
   useEffect(() => {
     if (reduced || played.current || !root.current) return;
@@ -50,16 +26,10 @@ export function Hero() {
       if (performance.now() - mountedAt.current > 1000 || root.current.getBoundingClientRect().bottom < innerHeight * 0.3 || window.scrollY > 100) return;
       const ctx = gsap.context(() => {
         const tl = gsap.timeline({ defaults: { ease: motion.cinematic } });
-        tl.fromTo(".wordmark-glyph", { y: 45, opacity: 0 }, {
-          y: 0, opacity: 1, duration: motion.hero, stagger: motion.stagger,
-        }, 0);
-        tl.fromTo(".hero-art", { opacity: 0, scale: 0.86 }, {
-          opacity: 1, scale: 1, duration: motion.hero + 0.35,
-        }, 0.12);
         tl.fromTo(".hero-line > span", { yPercent: 115 }, {
           yPercent: 0, duration: motion.reveal, stagger: motion.stagger,
         }, 0.38);
-        tl.fromTo(".hero-kicker, .hero-intro, .hero-instrument, .hero-footer", { y: 18, opacity: 0 }, {
+        tl.fromTo(".hero-intro, .hero-footer", { y: 18, opacity: 0 }, {
           y: 0, opacity: 1, duration: motion.base, stagger: motion.stagger,
         }, 0.72);
       }, root);
@@ -69,25 +39,13 @@ export function Hero() {
   }, [reduced]);
 
   return (
-    <section ref={root} className="hero" id="top" aria-labelledby="hero-title" data-scene={largeScreen ? scene : "disabled"}>
+    <section ref={root} className="hero" id="top" aria-labelledby="hero-title">
       <div className="hero-topline mono">
         <span><i className="status-dot" /> Independent minds. Open possibilities.</span>
         <span>SMACKQ / Digital atelier / 2026</span>
       </div>
-      <div className="hero-wordmark"><Wordmark /></div>
-      <div className="hero-art">{largeScreen && <ChromeScene onReady={sceneReady} impulse={impulse} />}</div>
-      <div className="hero-instrument">
-        <span className="instrument-cross" aria-hidden="true">+</span>
-        <span className="mono">SQ—001 / Living matter</span>
-        <button className="matter-control" onClick={() => setImpulse((value) => value + 1)}
-          disabled={scene !== "ready" || reduced} aria-label="Reshape the sculpture">
-          <span aria-hidden="true">↻</span> Change the form
-        </button>
-        <span className="instrument-hint mono">{scene === "loading" ? "Preparing the material…" : scene === "ready" ? "Move. Drag. Make it yours." : "A study in living form."}</span>
-      </div>
       <div className="hero-bottom">
         <div className="hero-heading">
-          <div className="eyebrow hero-kicker">Independent AI-powered web development studio.</div>
           <h1 id="hero-title">
             <span className="hero-line"><span>DIGITAL,</span></span>
             <span className="hero-line"><span>REIMAGINED.</span></span>
